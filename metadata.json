@@ -1,0 +1,8 @@
+{
+  "name": "SmartBrand",
+  "description": "A premium platform helping small businesses build professional brand identities and verify product quality to earn customer trust.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
