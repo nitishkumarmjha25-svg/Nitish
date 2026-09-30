@@ -9,19 +9,21 @@
 
   body {
     font-family: var(--font-sans);
-    background-color: #FAF9F5;
-    color: #141816;
+    background-color: #FAF8F5;
+    color: #1A1E1C;
     overflow-x: hidden;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.25s ease, color 0.25s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   html.dark body,
   body.dark {
-    background-color: #0c1218;
-    color: #f1f5f9;
+    background-color: #101614;
+    color: #EBF2EE;
   }
 
-  h1, h2, .font-display {
+  h1, h2, h3, .font-display {
     font-family: var(--font-display);
     text-wrap: balance;
   }
@@ -32,36 +34,26 @@
   }
 }
 
-/* Dark mode smooth surface adaptations */
+/* Subtle physical paper grain & craft aesthetics */
+.craft-border {
+  border: 1px solid #E6E0D4;
+}
+
+.dark .craft-border {
+  border: 1px solid #23312B;
+}
+
+/* Dark mode smooth surface adaptations without breaking component-level color intents */
 .dark .bg-white {
-  background-color: #141c24 !important;
-  color: #f1f5f9;
+  background-color: #17211D;
+  color: #EBF2EE;
 }
 
 .dark .bg-\[\#FAF9F5\],
-.dark .bg-\[\#FAF9F5\]\/95 {
-  background-color: #0c1218 !important;
-}
-
-.dark .text-stone-900,
-.dark .text-stone-950,
-.dark .text-\[\#141816\],
-.dark .text-emerald-950 {
-  color: #f8fafc !important;
-}
-
-.dark .text-stone-800 {
-  color: #e2e8f0 !important;
-}
-
-.dark .text-stone-700,
-.dark .text-stone-600 {
-  color: #94a3b8 !important;
-}
-
-.dark .text-stone-500,
-.dark .text-stone-400 {
-  color: #64748b !important;
+.dark .bg-\[\#FAF8F5\],
+.dark .bg-\[\#FAF9F5\]\/95,
+.dark .bg-\[\#FAF8F5\]\/95 {
+  background-color: #101614;
 }
 
 .dark .border-stone-200,
@@ -70,31 +62,31 @@
 .dark .border-stone-200\/70,
 .dark .border-stone-200\/60,
 .dark .border-stone-300 {
-  border-color: #1e293b !important;
+  border-color: #24332D;
 }
 
 .dark .bg-stone-100,
 .dark .bg-stone-50 {
-  background-color: #18222e !important;
+  background-color: #1C2723;
 }
 
 .dark .hover\:bg-stone-100:hover,
 .dark .hover\:bg-stone-50:hover,
 .dark .hover\:bg-stone-200:hover {
-  background-color: #223040 !important;
+  background-color: #25352F;
 }
 
 .dark input:not([type="checkbox"]),
 .dark select,
 .dark textarea {
-  background-color: #16202c !important;
-  border-color: #2a3a4d !important;
-  color: #f8fafc !important;
+  background-color: #17211D;
+  border-color: #2B3D36;
+  color: #EBF2EE;
 }
 
 .dark input::placeholder,
 .dark textarea::placeholder {
-  color: #64748b !important;
+  color: #7A8E85;
 }
 
 @media (prefers-reduced-motion: reduce) {

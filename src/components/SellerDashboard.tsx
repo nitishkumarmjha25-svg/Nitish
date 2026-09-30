@@ -40,6 +40,8 @@ import {
   Filter,
   Flame,
   Globe2,
+  Globe,
+  ChevronDown,
   LogOut,
   User,
 } from 'lucide-react';
@@ -67,7 +69,7 @@ import {
 } from '../types/smartbrand';
 import { ProductImage, getStudioProductDataUri } from '../utils/productArtwork';
 import { BrandStudio } from './BrandStudio';
-import { SupportedLanguage, getTranslation } from '../utils/i18n';
+import { SupportedLanguage, getTranslation, SUPPORTED_LANGUAGES } from '../utils/i18n';
 import { ThemeToggle, LanguageSelector } from './ThemeAndLangControls';
 
 interface SellerDashboardProps {
@@ -173,6 +175,9 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
 
   // Review Filter State
   const [reviewFilterProduct, setReviewFilterProduct] = useState('ALL');
+
+  // Sidebar Language Selector State
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
   // Overview Interactive Tab & Live Stream State
   const [overviewTimeRange, setOverviewTimeRange] = useState<'7d' | '14d' | '30d'>('7d');
@@ -458,6 +463,8 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
   };
 
   const t = (key: string) => getTranslation(currentLang, key);
+  const currentLangObj =
+    SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
   const sidebarItems: { id: SellerSidebarTab; label: string; icon: React.ReactNode }[] = [
     { id: 'overview', label: t('overview'), icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -471,22 +478,22 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAF9F5] text-[#141816] flex">
-      <aside className="hidden lg:flex w-[268px] shrink-0 bg-white border-r border-stone-200/90 flex-col justify-between sticky top-0 h-screen">
-        <div className="p-5 space-y-5">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-[#FAF9F5] dark:bg-stone-950 text-[#141816] dark:text-stone-100 flex">
+      {/* Desktop Left Sidebar */}
+      <aside className="hidden lg:flex w-[272px] shrink-0 bg-white dark:bg-stone-900 border-r border-stone-200/90 dark:border-stone-800 flex-col justify-between sticky top-0 h-screen overflow-y-auto">
+        <div className="p-4 space-y-4">
+          {/* UPAR ME THEME (Theme toggle at the top of the sidebar) */}
+          <div className="flex items-center justify-between pb-3 border-b border-stone-200/80 dark:border-stone-800">
             <button
               onClick={onBackToLanding}
-              className="font-display text-xl font-bold tracking-tight text-emerald-950 dark:text-emerald-400"
+              className="font-display text-xl font-bold tracking-tight text-emerald-950 dark:text-emerald-400 hover:opacity-85 transition-opacity"
             >
               SmartBrand
             </button>
-            <div className="flex items-center gap-1.5">
-              <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
-            </div>
+            <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} showLabel={true} />
           </div>
 
-          <div className="p-3 rounded-2xl bg-[#FAF9F5] border border-stone-200/90 flex items-center gap-3">
+          <div className="p-3 rounded-2xl bg-[#FAF9F5] dark:bg-stone-800/80 border border-stone-200/90 dark:border-stone-700/80 flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-display font-bold text-sm shrink-0"
               style={{ backgroundColor: brand.primaryColor }}
@@ -498,11 +505,12 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                 .slice(0, 2)}
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-bold text-stone-900 truncate">{brand.brandName}</div>
-              <div className="text-[11px] text-stone-500 truncate">{brand.originLocation}</div>
+              <div className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">{brand.brandName}</div>
+              <div className="text-[11px] text-stone-500 dark:text-stone-400 truncate">{brand.originLocation}</div>
             </div>
           </div>
 
+          {/* SIDEBAR NAVIGATION ITEMS (My Product, Brand Studio, etc.) */}
           <nav className="space-y-1">
             {sidebarItems.map((item) => {
               const isActive = activeTab === item.id;
@@ -510,10 +518,10 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                 <button
                   key={item.id}
                   onClick={() => onChangeTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap ${
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
                     isActive
                       ? 'bg-emerald-800 text-white shadow-xs'
-                      : 'text-stone-600 hover:text-stone-950 hover:bg-stone-100'
+                      : 'text-stone-600 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800'
                   }`}
                 >
                   {item.icon}
@@ -521,19 +529,79 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                 </button>
               );
             })}
+
+            {/* JIDHAR MY PRODUCT, BRAND STUDIO HAI UDHAR EK OPTION ME CHANGE LANGUAGE */}
+            <div className="pt-2 mt-2 border-t border-stone-200/70 dark:border-stone-800">
+              <button
+                type="button"
+                onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                  isLangMenuOpen
+                    ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700/60 shadow-xs'
+                    : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border-stone-200/80 dark:border-stone-700/60 bg-stone-50/70 dark:bg-stone-800/40'
+                }`}
+                title="Change Website Language / भाषा बदलें"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="truncate">Change Language</span>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 font-bold">
+                    {currentLangObj.flag} {currentLangObj.nativeName}
+                  </span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 opacity-70 transition-transform duration-200 ${
+                      isLangMenuOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </div>
+              </button>
+
+              {/* Expandable Language Drawer */}
+              {isLangMenuOpen && (
+                <div className="mt-1.5 p-1.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 shadow-xl space-y-1 animate-in fade-in duration-150">
+                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 border-b border-stone-100 dark:border-stone-800">
+                    Select Language / भाषा चुनें
+                  </div>
+                  <div className="max-h-52 overflow-y-auto space-y-0.5 pt-0.5">
+                    {SUPPORTED_LANGUAGES.map((lang) => {
+                      const isCurrent = lang.code === currentLang;
+                      return (
+                        <button
+                          key={lang.code}
+                          type="button"
+                          onClick={() => {
+                            onSelectLang(lang.code);
+                            setIsLangMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors text-left cursor-pointer ${
+                            isCurrent
+                              ? 'bg-emerald-800 text-white font-semibold'
+                              : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span>{lang.flag}</span>
+                            <span className="font-semibold">{lang.nativeName}</span>
+                            <span className="text-[10px] opacity-75">({lang.name})</span>
+                          </div>
+                          {isCurrent && <Check className="w-3.5 h-3.5 text-white" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </nav>
         </div>
 
-        <div className="p-4 border-t border-stone-200/80 space-y-2">
-          {/* Language Selector in Sidebar */}
-          <div className="flex items-center justify-between px-1 py-1">
-            <span className="text-[11px] font-semibold text-stone-500">{t('switchLanguage')}:</span>
-            <LanguageSelector currentLang={currentLang} onSelectLang={onSelectLang} isDark={isDark} />
-          </div>
-
+        {/* BOTTOM SECTION OF SIDEBAR */}
+        <div className="p-4 border-t border-stone-200/80 dark:border-stone-800 space-y-2.5">
           <button
             onClick={() => onOpenQRProfile('prod-mango-pickle')}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-emerald-900 bg-emerald-50/80 hover:bg-emerald-100/80 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-emerald-900 bg-emerald-50/80 hover:bg-emerald-100/80 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/60 transition-colors"
           >
             <span>Public QR Trust Page</span>
             <ExternalLink className="w-3.5 h-3.5" />
@@ -541,57 +609,56 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
 
           <button
             onClick={onOpenAdminPanel}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800 transition-colors"
           >
             <span>{t('adminPanel')}</span>
             <ShieldCheck className="w-3.5 h-3.5" />
           </button>
 
-          {/* User Profile & Logout Button */}
-          <div className="pt-2 border-t border-stone-200/80 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0">
-                <User className="w-3.5 h-3.5" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[11px] font-bold text-stone-900 truncate">
-                  {brand.brandName}
-                </div>
-                <div className="text-[10px] text-stone-500 truncate">care@villageharvest.in</div>
-              </div>
+          {/* User Profile Card */}
+          <div className="pt-2 border-t border-stone-200/80 dark:border-stone-800 flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold text-xs shrink-0">
+              <User className="w-4 h-4" />
             </div>
-
-            <button
-              onClick={onLogout}
-              className="p-1.5 rounded-lg text-stone-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors shrink-0"
-              title="Logout from SmartBrand"
-              aria-label="Logout"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">
+                {brand.brandName}
+              </div>
+              <div className="text-[10px] text-stone-500 dark:text-stone-400 truncate">care@villageharvest.in</div>
+            </div>
           </div>
+
+          {/* NICHE ME LOGOUT (Dedicated full-width Logout button) */}
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 dark:bg-red-950/40 dark:hover:bg-red-900/50 dark:text-red-300 text-xs font-bold transition-all border border-red-200/90 dark:border-red-900/50 shadow-xs cursor-pointer"
+            title="Log out from SmartBrand"
+          >
+            <LogOut className="w-4 h-4 text-red-600 dark:text-red-400" />
+            <span>{t('logout')}</span>
+          </button>
         </div>
       </aside>
 
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden bg-black/50 backdrop-blur-xs flex">
-          <div className="w-72 bg-white h-full p-6 flex flex-col justify-between">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <span className="font-display text-xl font-bold text-emerald-950">SmartBrand</span>
+          <div className="w-72 bg-white dark:bg-stone-900 h-full p-5 flex flex-col justify-between overflow-y-auto">
+            <div className="space-y-5">
+              {/* Mobile Top Header: SmartBrand + ThemeToggle */}
+              <div className="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800">
+                <span className="font-display text-xl font-bold text-emerald-950 dark:text-emerald-400">SmartBrand</span>
                 <div className="flex items-center gap-2">
-                  <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
+                  <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} showLabel={false} />
                   <button
                     onClick={() => setMobileMenuOpen(false)}
-                    className="p-1.5 text-stone-500 hover:text-stone-900 rounded-lg"
+                    className="p-1.5 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white rounded-lg"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
 
-              <LanguageSelector currentLang={currentLang} onSelectLang={onSelectLang} isDark={isDark} className="w-full" />
-
+              {/* Mobile Navigation */}
               <nav className="space-y-1">
                 {sidebarItems.map((item) => (
                   <button
@@ -603,41 +670,68 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                     className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold ${
                       activeTab === item.id
                         ? 'bg-emerald-800 text-white'
-                        : 'text-stone-600 hover:bg-stone-100'
+                        : 'text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
                     }`}
                   >
                     {item.icon}
                     <span>{item.label}</span>
                   </button>
                 ))}
+
+                {/* Change Language in Mobile Menu */}
+                <div className="pt-2 mt-2 border-t border-stone-200/70 dark:border-stone-800">
+                  <div className="text-[11px] font-bold text-stone-500 dark:text-stone-400 mb-1.5 px-1">
+                    Language / भाषा:
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto p-1 bg-stone-50 dark:bg-stone-800 rounded-xl">
+                    {SUPPORTED_LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => onSelectLang(lang.code)}
+                        className={`flex items-center gap-1.5 p-2 rounded-lg text-xs font-medium text-left ${
+                          currentLang === lang.code
+                            ? 'bg-emerald-800 text-white font-bold'
+                            : 'text-stone-700 dark:text-stone-300 hover:bg-stone-200/70 dark:hover:bg-stone-700'
+                        }`}
+                      >
+                        <span>{lang.flag}</span>
+                        <span className="truncate">{lang.nativeName}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </nav>
             </div>
 
-            <div className="space-y-2 pt-4 border-t border-stone-200">
+            <div className="space-y-2 pt-4 border-t border-stone-200 dark:border-stone-800">
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   onOpenQRProfile('prod-mango-pickle');
                 }}
-                className="w-full py-2 px-3 rounded-xl bg-emerald-50 text-emerald-900 text-xs font-semibold text-left"
+                className="w-full py-2 px-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 text-xs font-semibold text-left flex items-center justify-between"
               >
-                Open Sample QR Trust Page
+                <span>Sample QR Trust Page</span>
+                <ExternalLink className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   onOpenAdminPanel();
                 }}
-                className="w-full py-2 px-3 rounded-xl bg-stone-100 text-stone-700 text-xs font-semibold text-left"
+                className="w-full py-2 px-3 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold text-left flex items-center justify-between"
               >
-                Open Admin Panel
+                <span>{t('adminPanel')}</span>
+                <ShieldCheck className="w-3.5 h-3.5" />
               </button>
+
+              {/* Mobile Logout Button */}
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   onLogout();
                 }}
-                className="w-full py-2 px-3 rounded-xl bg-red-50 text-red-800 text-xs font-semibold text-left flex items-center justify-between"
+                className="w-full py-2.5 px-3 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-xs font-bold text-left flex items-center justify-between border border-red-200/80 dark:border-red-900/50"
               >
                 <span>{t('logout')}</span>
                 <LogOut className="w-3.5 h-3.5" />
@@ -648,38 +742,33 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
       )}
 
       <div className="flex-1 min-w-0 pb-24">
-        <header className="sticky top-0 z-30 bg-[#FAF9F5]/95 backdrop-blur border-b border-stone-200/80 px-4 sm:px-8 py-3.5">
+        {/* Sticky Top Header (Clean: Theme and Language removed from top as requested) */}
+        <header className="sticky top-0 z-30 bg-[#FAF9F5]/95 dark:bg-stone-900/95 backdrop-blur border-b border-stone-200/80 dark:border-stone-800 px-4 sm:px-8 py-3.5">
           <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 rounded-xl bg-white border border-stone-200 text-stone-700"
+                className="lg:hidden p-2 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300"
               >
                 <Menu className="w-4 h-4" />
               </button>
-              <div className="flex items-center gap-2 text-xs text-stone-500">
-                <span className="font-semibold text-stone-800">{brand.brandName}</span>
+              <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
+                <span className="font-semibold text-stone-800 dark:text-stone-200">{brand.brandName}</span>
                 <span aria-hidden="true">/</span>
                 <span className="capitalize">{activeTab.replace('-', ' ')}</span>
                 <span className="hidden md:inline" aria-hidden="true">
                   ·
                 </span>
-                <span className="hidden md:inline text-stone-500">
+                <span className="hidden md:inline text-stone-500 dark:text-stone-400">
                   Backend API & Database Connected
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Language Selector */}
-              <LanguageSelector currentLang={currentLang} onSelectLang={onSelectLang} isDark={isDark} />
-
-              {/* Theme Toggle */}
-              <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
-
               <button
                 onClick={onStartDemoTour}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-900 bg-emerald-950/5 hover:bg-emerald-950/10 border border-emerald-800/20 rounded-xl transition-colors whitespace-nowrap"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-900 dark:text-emerald-300 bg-emerald-950/5 hover:bg-emerald-950/10 dark:bg-emerald-900/30 border border-emerald-800/20 dark:border-emerald-700/40 rounded-xl transition-colors whitespace-nowrap"
               >
                 <Compass className="w-3.5 h-3.5" />
                 <span>Guided Tour</span>
@@ -687,20 +776,10 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
 
               <button
                 onClick={openAddProductModal}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl transition-colors whitespace-nowrap shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl transition-colors whitespace-nowrap shadow-xs cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>{t('addProduct')}</span>
-              </button>
-
-              {/* Quick Logout Button */}
-              <button
-                onClick={onLogout}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-stone-700 dark:text-stone-300 hover:text-red-700 dark:hover:text-red-400 bg-white dark:bg-stone-800 hover:bg-red-50 dark:hover:bg-red-950/40 border border-stone-200 dark:border-stone-700 rounded-xl transition-colors whitespace-nowrap shadow-xs"
-                title="Log out of session"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{t('logout')}</span>
               </button>
             </div>
           </div>
@@ -709,540 +788,226 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
         <main className="max-w-6xl mx-auto px-4 sm:px-8 pt-7 space-y-7">
           {activeTab === 'overview' && (
             <>
-              {/* Executive Hero Banner */}
-              <div className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-emerald-950 via-[#064e3b] to-[#032e24] text-white p-6 sm:p-8 shadow-xl border border-emerald-700/30">
-                {/* Background Ambient Glows */}
-                <div
-                  className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-emerald-400/15 blur-3xl pointer-events-none"
-                  aria-hidden="true"
-                />
-                <div
-                  className="absolute right-1/3 -bottom-20 w-72 h-72 rounded-full bg-amber-400/10 blur-3xl pointer-events-none"
-                  aria-hidden="true"
-                />
-
-                <div className="relative z-10 space-y-6">
-                  {/* Top Status Bar */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 text-xs border-b border-white/10 pb-4">
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-semibold shadow-xs">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <span>Cloud API & Database Connected</span>
-                      </span>
-                      <span className="text-emerald-200/50 hidden sm:inline">·</span>
-                      <span className="inline-flex items-center gap-1 text-emerald-200/90 font-mono text-[11px]">
-                        <MapPin className="w-3 h-3 text-emerald-400" />
-                        <span>{brand.originLocation}</span>
-                      </span>
-                      <span className="text-emerald-200/50 hidden md:inline">·</span>
-                      <span className="text-emerald-200/80 text-[11px] font-mono hidden md:inline">
-                        Est. {brand.foundedYear || '2021'}
-                      </span>
+              {/* Refined Artisanal Producer Welcome Card */}
+              <div className="bg-[#102a20] text-stone-100 rounded-2xl p-6 sm:p-7 border border-emerald-900/60 shadow-xs">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                  <div className="flex items-start gap-4">
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-display font-bold text-lg shrink-0 shadow-sm"
+                      style={{ backgroundColor: brand.primaryColor || '#065F46' }}
+                    >
+                      {brand.brandName
+                        .split(' ')
+                        .map((w) => w[0])
+                        .join('')
+                        .slice(0, 2)}
                     </div>
-
-                    <div className="flex items-center gap-2 text-xs font-mono text-emerald-200/90">
-                      <Clock className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Batch Telemetry Active · 100% Traceability Index</span>
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-emerald-300/90 font-medium">
+                        <span>{brand.originLocation}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>FSSAI Lic #11521034000128</span>
+                        <span aria-hidden="true">·</span>
+                        <span>Est. {brand.foundedYear || '2021'}</span>
+                      </div>
+                      <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                        Welcome back, {brand.brandName}
+                      </h1>
+                      <p className="text-xs sm:text-sm text-stone-300/90 max-w-2xl leading-relaxed">
+                        {brand.tagline ||
+                          'Transparent digital trust platform for artisanal and small-batch produce.'}
+                        {' '}All {totalProducts} handcrafted batches are live with verified public QR trust pages, lab test records, and verified buyer reviews.
+                      </p>
                     </div>
                   </div>
 
-                  {/* Main Banner Content */}
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                    <div className="flex items-start gap-4">
-                      <div
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-display font-bold text-xl shadow-lg border-2 border-white/20 shrink-0"
-                        style={{ backgroundColor: brand.primaryColor || '#065F46' }}
-                      >
-                        {brand.brandName
-                          .split(' ')
-                          .map((w) => w[0])
-                          .join('')
-                          .slice(0, 2)}
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs uppercase tracking-wider font-semibold text-emerald-300">
-                            Seller Studio Dashboard
-                          </span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                            Verified Producer
-                          </span>
-                        </div>
-                        <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                          Good morning, {brand.brandName}!
-                        </h1>
-                        <p className="text-xs sm:text-sm text-emerald-100/80 max-w-2xl leading-relaxed">
-                          {brand.tagline ||
-                            'Transparent digital trust platform for artisanal and small-batch produce.'}
-                          {' '}All {totalProducts} batches are live with verified public QR trust pages, lab compliance records, and real-time shopper scan telemetry.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Action Hub inside Hero */}
-                    <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-                      <button
-                        onClick={openAddProductModal}
-                        className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-emerald-950 bg-white hover:bg-emerald-50 rounded-xl transition-all shadow-md active:scale-95 whitespace-nowrap"
-                      >
-                        <Plus className="w-4 h-4 text-emerald-800" />
-                        <span>Add New Batch</span>
-                      </button>
-                      <button
-                        onClick={() => handleSimulateNewScan()}
-                        className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-white bg-emerald-800/80 hover:bg-emerald-700 border border-emerald-600/40 rounded-xl transition-all shadow-xs active:scale-95 whitespace-nowrap"
-                        title="Simulate a real-time consumer scan from an Indian city"
-                      >
-                        <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-                        <span>Simulate Live Scan</span>
-                      </button>
-                      <button
-                        onClick={() => onOpenQRProfile('prod-mango-pickle')}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold text-emerald-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/15 rounded-xl transition-all whitespace-nowrap"
-                      >
-                        <QrCode className="w-3.5 h-3.5 text-emerald-300" />
-                        <span className="hidden sm:inline">Inspect QR Page</span>
-                      </button>
-                    </div>
+                  <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                    <button
+                      onClick={openAddProductModal}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-emerald-950 bg-stone-100 hover:bg-white rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                    >
+                      <Plus className="w-4 h-4 text-emerald-800" />
+                      <span>Add New Batch</span>
+                    </button>
+                    <button
+                      onClick={() => onOpenQRProfile('prod-mango-pickle')}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-emerald-900/60 hover:bg-emerald-900 border border-emerald-700/60 rounded-xl transition-all cursor-pointer"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>View Sample QR Page</span>
+                    </button>
                   </div>
                 </div>
               </div>
 
-              {/* 5-Column Fintech Metric Cards Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
-                {/* Total Products */}
-                <div className="bg-white border border-stone-200/90 rounded-[20px] p-4.5 shadow-xs hover:border-emerald-700/40 transition-all flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between text-xs text-stone-500 font-medium">
-                      <span>Active Batches</span>
-                      <Package className="w-4 h-4 text-emerald-800" />
-                    </div>
-                    <div className="font-mono text-2xl sm:text-3xl font-bold text-stone-900 mt-2 tabular-nums">
-                      {totalProducts}
-                    </div>
+              {/* 4 Clean, Honest Key Metrics */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white dark:bg-stone-900 border border-stone-200/90 dark:border-stone-800 rounded-xl p-4.5 shadow-xs flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 font-medium">
+                    <span>Active Batches</span>
+                    <Package className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                   </div>
-                  <div className="mt-2.5 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px]">
-                    <span className="text-emerald-800 font-medium">100% QR Online</span>
-                    <span className="text-stone-400 font-mono">4 live</span>
+                  <div className="font-mono text-2xl sm:text-3xl font-bold text-stone-900 dark:text-white mt-2 tabular-nums">
+                    {totalProducts}
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-stone-100 dark:border-stone-800 text-[11px] text-stone-500 dark:text-stone-400 flex items-center justify-between">
+                    <span>In-store verification</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 font-medium">100% Online</span>
                   </div>
                 </div>
 
-                {/* QR Scans */}
-                <div className="bg-white border border-stone-200/90 rounded-[20px] p-4.5 shadow-xs hover:border-emerald-700/40 transition-all flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between text-xs text-stone-500 font-medium">
-                      <span>Consumer Scans</span>
-                      <TrendingUp className="w-4 h-4 text-emerald-800" />
-                    </div>
-                    <div className="font-mono text-2xl sm:text-3xl font-bold text-emerald-900 mt-2 tabular-nums">
-                      {totalQrScans.toLocaleString()}
-                    </div>
+                <div className="bg-white dark:bg-stone-900 border border-stone-200/90 dark:border-stone-800 rounded-xl p-4.5 shadow-xs flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 font-medium">
+                    <span>Total Shopper Scans</span>
+                    <TrendingUp className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                   </div>
-                  <div className="mt-2.5 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px]">
-                    <span className="text-emerald-800 font-semibold flex items-center gap-0.5">
-                      <span>▲ +18.4%</span>
-                    </span>
-                    <span className="text-stone-500">10d velocity</span>
+                  <div className="font-mono text-2xl sm:text-3xl font-bold text-stone-900 dark:text-white mt-2 tabular-nums">
+                    {totalQrScans.toLocaleString()}
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-stone-100 dark:border-stone-800 text-[11px] text-stone-500 dark:text-stone-400 flex items-center justify-between">
+                    <span>Across 5 Metros</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 font-medium">▲ +18.4%</span>
                   </div>
                 </div>
 
-                {/* Verified Quality Documents */}
-                <div className="bg-white border border-stone-200/90 rounded-[20px] p-4.5 shadow-xs hover:border-emerald-700/40 transition-all flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between text-xs text-stone-500 font-medium">
-                      <span>Quality Docs</span>
-                      <FileCheck2 className="w-4 h-4 text-emerald-800" />
-                    </div>
-                    <div className="font-mono text-2xl sm:text-3xl font-bold text-stone-900 mt-2 tabular-nums">
-                      {documents.length}
-                    </div>
+                <div className="bg-white dark:bg-stone-900 border border-stone-200/90 dark:border-stone-800 rounded-xl p-4.5 shadow-xs flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 font-medium">
+                    <span>Lab Test Records</span>
+                    <FileCheck2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                   </div>
-                  <div className="mt-2.5 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px]">
-                    <span className="text-emerald-800 font-medium">
+                  <div className="font-mono text-2xl sm:text-3xl font-bold text-stone-900 dark:text-white mt-2 tabular-nums">
+                    {documents.length}
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-stone-100 dark:border-stone-800 text-[11px] text-stone-500 dark:text-stone-400 flex items-center justify-between">
+                    <span>NABL & FSSAI on file</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 font-medium">
                       {documents.filter((d) => d.status === 'Verified by Admin').length} Verified
                     </span>
-                    <span className="text-stone-400">80% approved</span>
                   </div>
                 </div>
 
-                {/* Customer Trust Rating */}
-                <div className="bg-white border border-stone-200/90 rounded-[20px] p-4.5 shadow-xs hover:border-emerald-700/40 transition-all flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between text-xs text-stone-500 font-medium">
-                      <span>Shopper Rating</span>
-                      <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                    </div>
-                    <div className="font-mono text-2xl sm:text-3xl font-bold text-stone-900 mt-2 tabular-nums flex items-center gap-1.5">
-                      <span>{avgRating}</span>
-                      <span className="text-amber-500 text-lg">★</span>
-                    </div>
+                <div className="bg-white dark:bg-stone-900 border border-stone-200/90 dark:border-stone-800 rounded-xl p-4.5 shadow-xs flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 font-medium">
+                    <span>Customer Rating</span>
+                    <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
                   </div>
-                  <div className="mt-2.5 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px]">
-                    <span className="text-stone-600">{publishedReviews.length} Reviews</span>
-                    <span className="text-emerald-800 font-medium">94% Verified</span>
+                  <div className="font-mono text-2xl sm:text-3xl font-bold text-stone-900 dark:text-white mt-2 tabular-nums flex items-baseline gap-1.5">
+                    <span>{avgRating}</span>
+                    <span className="text-amber-500 text-base">★</span>
                   </div>
-                </div>
-
-                {/* SmartBrand Trust Score */}
-                <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-emerald-50/80 to-teal-50/50 border border-emerald-200 rounded-[20px] p-4.5 shadow-xs flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between text-xs font-semibold text-emerald-950">
-                      <span>Trust Index</span>
-                      <Award className="w-4 h-4 text-emerald-800" />
-                    </div>
-                    <div className="font-mono text-2xl sm:text-3xl font-bold text-emerald-900 mt-2 tabular-nums flex items-baseline gap-1">
-                      <span>98</span>
-                      <span className="text-xs text-emerald-700 font-medium font-sans">/ 100</span>
-                    </div>
-                  </div>
-                  <div className="mt-2.5 pt-2 border-t border-emerald-200/70">
-                    <div className="w-full bg-emerald-200/60 rounded-full h-1.5 overflow-hidden">
-                      <div className="bg-emerald-800 h-full rounded-full w-[98%]" />
-                    </div>
-                    <div className="text-[10px] font-semibold text-emerald-900 mt-1 flex items-center justify-between">
-                      <span>Exceptional Tier</span>
-                      <span>Lab Tested ✓</span>
-                    </div>
+                  <div className="mt-2 pt-2 border-t border-stone-100 dark:border-stone-800 text-[11px] text-stone-500 dark:text-stone-400 flex items-center justify-between">
+                    <span>{publishedReviews.length} Verified Reviews</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 font-medium">94% Buyer Match</span>
                   </div>
                 </div>
               </div>
 
-              {/* Interactive Performance & Operations Command Center */}
-              <div className="bg-white border border-stone-200/90 rounded-[24px] p-5 sm:p-7 shadow-xs space-y-6">
-                {/* Hub Navigation Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200/80 pb-4">
+              {/* Shopper Scan Trends & Geography */}
+              <div className="bg-white dark:bg-stone-900 border border-stone-200/90 dark:border-stone-800 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200/80 dark:border-stone-800">
                   <div>
-                    <h2 className="font-display text-lg sm:text-xl font-bold text-stone-900">
-                      Consumer Verification & Operations Hub
+                    <h2 className="font-display text-lg font-bold text-stone-900 dark:text-white">
+                      Shopper Scan Velocity
                     </h2>
-                    <p className="text-xs text-stone-500">
-                      Real-time consumer scan analytics, batch compliance status, and live telemetry
+                    <p className="text-xs text-stone-500 dark:text-stone-400">
+                      Daily in-store QR scans logged from consumer smartphones
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* Sub-Tab Selector */}
-                    <div className="p-1 rounded-xl bg-stone-100 flex items-center gap-1 text-xs">
-                      <button
-                        onClick={() => setOverviewSubTab('analytics')}
-                        className={`px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1.5 ${
-                          overviewSubTab === 'analytics'
-                            ? 'bg-white text-emerald-950 shadow-xs'
-                            : 'text-stone-600 hover:text-stone-950'
-                        }`}
-                      >
-                        <TrendingUp className="w-3.5 h-3.5 text-emerald-800" />
-                        <span>Scan Analytics</span>
-                      </button>
-                      <button
-                        onClick={() => setOverviewSubTab('compliance')}
-                        className={`px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1.5 ${
-                          overviewSubTab === 'compliance'
-                            ? 'bg-white text-emerald-950 shadow-xs'
-                            : 'text-stone-600 hover:text-stone-950'
-                        }`}
-                      >
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-800" />
-                        <span>Batch Radar</span>
-                      </button>
-                      <button
-                        onClick={() => setOverviewSubTab('live-stream')}
-                        className={`px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1.5 ${
-                          overviewSubTab === 'live-stream'
-                            ? 'bg-white text-emerald-950 shadow-xs'
-                            : 'text-stone-600 hover:text-stone-950'
-                        }`}
-                      >
-                        <Activity className="w-3.5 h-3.5 text-emerald-800" />
-                        <span>Live Stream</span>
-                      </button>
+                  <div className="flex items-center gap-2">
+                    <div className="p-1 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center gap-1 text-xs">
+                      {(['7d', '14d', '30d'] as const).map((range) => (
+                        <button
+                          key={range}
+                          onClick={() => setOverviewTimeRange(range)}
+                          className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors cursor-pointer ${
+                            overviewTimeRange === range
+                              ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-2xs'
+                              : 'text-stone-600 dark:text-stone-400 hover:text-stone-950 dark:hover:text-stone-200'
+                          }`}
+                        >
+                          {range.toUpperCase()}
+                        </button>
+                      ))}
                     </div>
 
-                    {/* Time Range Filter (For Analytics) */}
-                    {overviewSubTab === 'analytics' && (
-                      <div className="p-1 rounded-xl bg-[#FAF9F5] border border-stone-200/90 flex items-center gap-0.5 text-xs">
-                        {(['7d', '14d', '30d'] as const).map((range) => (
-                          <button
-                            key={range}
-                            onClick={() => setOverviewTimeRange(range)}
-                            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors ${
-                              overviewTimeRange === range
-                                ? 'bg-emerald-800 text-white'
-                                : 'text-stone-600 hover:text-stone-950'
-                            }`}
-                          >
-                            {range.toUpperCase()}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                    <button
+                      onClick={() => handleSimulateNewScan()}
+                      className="px-2.5 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                      title="Simulate a real-time scan"
+                    >
+                      <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                      <span>Simulate Scan</span>
+                    </button>
                   </div>
                 </div>
 
-                {/* Sub-Tab 1: Scan Analytics & Reach */}
-                {overviewSubTab === 'analytics' && (
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    <div className="lg:col-span-8 space-y-3">
-                      <div className="flex items-center justify-between text-xs text-stone-500">
-                        <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-800" />
-                            <strong className="text-stone-800">Total QR Scans</strong>
-                          </span>
-                          <span className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                            <strong className="text-stone-800">Unique Shoppers</strong>
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => handleSimulateNewScan()}
-                          className="px-2.5 py-1 text-[11px] font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors flex items-center gap-1"
-                        >
-                          <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
-                          <span>+ Simulate Live Scan</span>
-                        </button>
-                      </div>
+                <div className="h-56 sm:h-64 w-full pt-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={
+                        overviewTimeRange === '7d'
+                          ? scanAnalytics.slice(-7)
+                          : overviewTimeRange === '14d'
+                          ? scanAnalytics.slice(-14)
+                          : scanAnalytics
+                      }
+                    >
+                      <defs>
+                        <linearGradient id="scanGradHuman" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#065F46" stopOpacity={0.25} />
+                          <stop offset="95%" stopColor="#065F46" stopOpacity={0.0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" strokeOpacity={0.5} />
+                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#78716C' }} />
+                      <YAxis tick={{ fontSize: 11, fill: '#78716C' }} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#FFFFFF',
+                          borderColor: '#E7E5E4',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="scans"
+                        name="Total Scans"
+                        stroke="#065F46"
+                        strokeWidth={2.5}
+                        fillOpacity={1}
+                        fill="url(#scanGradHuman)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
 
-                      <div className="h-64 sm:h-72 w-full pt-2">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart
-                            data={
-                              overviewTimeRange === '7d'
-                                ? scanAnalytics.slice(-7)
-                                : overviewTimeRange === '14d'
-                                ? scanAnalytics.slice(-14)
-                                : scanAnalytics
-                            }
-                          >
-                            <defs>
-                              <linearGradient id="scanGradUpgraded" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#065F46" stopOpacity={0.35} />
-                                <stop offset="95%" stopColor="#065F46" stopOpacity={0.0} />
-                              </linearGradient>
-                              <linearGradient id="uniqueGradUpgraded" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#D97706" stopOpacity={0.25} />
-                                <stop offset="95%" stopColor="#D97706" stopOpacity={0.0} />
-                              </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#F0EFEA" />
-                            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#78716C' }} />
-                            <YAxis tick={{ fontSize: 11, fill: '#78716C' }} />
-                            <Tooltip
-                              contentStyle={{
-                                backgroundColor: '#FFFFFF',
-                                borderColor: '#E7E5E4',
-                                borderRadius: '14px',
-                                boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
-                                fontSize: '12px',
-                              }}
-                            />
-                            <Area
-                              type="monotone"
-                              dataKey="scans"
-                              name="Total Scans"
-                              stroke="#065F46"
-                              strokeWidth={3}
-                              fillOpacity={1}
-                              fill="url(#scanGradUpgraded)"
-                            />
-                            <Area
-                              type="monotone"
-                              dataKey="uniqueVisitors"
-                              name="Unique Shoppers"
-                              stroke="#D97706"
-                              strokeWidth={2}
-                              fillOpacity={1}
-                              fill="url(#uniqueGradUpgraded)"
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
+                {/* Regional Metro Spread */}
+                <div className="pt-3 border-t border-stone-100 dark:border-stone-800">
+                  <div className="text-xs font-semibold text-stone-700 dark:text-stone-300 mb-2">
+                    Shoppers by Region
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="p-2.5 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200/70 dark:border-stone-700/60">
+                      <div className="text-[11px] text-stone-500 dark:text-stone-400">Mumbai (MMR)</div>
+                      <div className="font-mono font-bold text-stone-900 dark:text-white mt-0.5">37% · 684 scans</div>
                     </div>
-
-                    {/* Regional Shopper Reach Breakdown */}
-                    <div className="lg:col-span-4 bg-[#FAF9F5] border border-stone-200/90 rounded-[20px] p-5 space-y-3.5">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 font-display text-sm font-bold text-stone-900">
-                          <Globe2 className="w-4 h-4 text-emerald-800" />
-                          <span>Shoppers By Metro</span>
-                        </div>
-                        <span className="text-[11px] font-mono text-stone-500">Live Scans</span>
-                      </div>
-
-                      <div className="space-y-3 pt-1 text-xs">
-                        {[
-                          { city: 'Mumbai (MMR)', scans: 684, pct: 37, color: 'bg-emerald-800' },
-                          { city: 'Bengaluru (Karnataka)', scans: 492, pct: 27, color: 'bg-teal-700' },
-                          { city: 'Pune (Maharashtra)', scans: 380, pct: 21, color: 'bg-emerald-600' },
-                          { city: 'New Delhi (NCR)', scans: 210, pct: 11, color: 'bg-amber-600' },
-                          { city: 'Hyderabad & Others', scans: 74, pct: 4, color: 'bg-stone-500' },
-                        ].map((metro) => (
-                          <div key={metro.city} className="space-y-1">
-                            <div className="flex items-center justify-between text-[11px]">
-                              <span className="font-semibold text-stone-800">{metro.city}</span>
-                              <span className="font-mono text-stone-500">
-                                {metro.scans} ({metro.pct}%)
-                              </span>
-                            </div>
-                            <div className="w-full bg-stone-200/70 h-2 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full rounded-full ${metro.color}`}
-                                style={{ width: `${metro.pct}%` }}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="pt-2 border-t border-stone-200/80 text-[11px] text-stone-600 flex items-center justify-between">
-                        <span>Average dwell time:</span>
-                        <strong className="text-stone-900 font-mono">1m 42s / profile</strong>
-                      </div>
+                    <div className="p-2.5 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200/70 dark:border-stone-700/60">
+                      <div className="text-[11px] text-stone-500 dark:text-stone-400">Bengaluru</div>
+                      <div className="font-mono font-bold text-stone-900 dark:text-white mt-0.5">27% · 492 scans</div>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200/70 dark:border-stone-700/60">
+                      <div className="text-[11px] text-stone-500 dark:text-stone-400">Pune</div>
+                      <div className="font-mono font-bold text-stone-900 dark:text-white mt-0.5">21% · 380 scans</div>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200/70 dark:border-stone-700/60">
+                      <div className="text-[11px] text-stone-500 dark:text-stone-400">New Delhi</div>
+                      <div className="font-mono font-bold text-stone-900 dark:text-white mt-0.5">11% · 210 scans</div>
                     </div>
                   </div>
-                )}
-
-                {/* Sub-Tab 2: Batch Compliance & Expiry Radar */}
-                {overviewSubTab === 'compliance' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {products.map((prod) => {
-                      const prodDocs = documents.filter((d) => d.productId === prod.id);
-                      const verified = prodDocs.filter((d) => d.status === 'Verified by Admin').length;
-                      return (
-                        <div
-                          key={prod.id}
-                          className="bg-[#FAF9F5] border border-stone-200/90 rounded-[20px] p-4 flex flex-col justify-between space-y-3"
-                        >
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between text-[11px]">
-                              <span className="font-mono font-bold text-emerald-900 bg-emerald-100/70 px-2 py-0.5 rounded-md">
-                                {prod.batchNumber}
-                              </span>
-                              <span className="text-stone-500 font-mono">₹{prod.priceInr}</span>
-                            </div>
-                            <h3 className="font-display font-bold text-sm text-stone-900 line-clamp-1">
-                              {prod.name}
-                            </h3>
-                            <div className="text-xs text-stone-600 space-y-1 pt-1 border-t border-stone-200/70">
-                              <div className="flex items-center justify-between text-[11px]">
-                                <span className="text-stone-500">Expiry:</span>
-                                <span className="font-mono font-medium text-stone-800">
-                                  {prod.expiryDate}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between text-[11px]">
-                                <span className="text-stone-500">Lab Documents:</span>
-                                <span className="font-semibold text-emerald-800">
-                                  {verified} / {prodDocs.length} Verified
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between text-[11px]">
-                                <span className="text-stone-500">QR Telemetry:</span>
-                                <span className="font-mono font-bold text-stone-900">
-                                  {prod.qrScans} scans
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="pt-2 border-t border-stone-200/80 flex items-center gap-2">
-                            <button
-                              onClick={() => onOpenQRProfile(prod.id)}
-                              className="flex-1 py-1.5 px-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
-                            >
-                              <ExternalLink className="w-3 h-3" />
-                              <span>Inspect Page</span>
-                            </button>
-                            <button
-                              onClick={() => handleSimulateNewScan(prod)}
-                              className="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg transition-colors"
-                              title="Simulate Scan on this Batch"
-                            >
-                              <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Sub-Tab 3: Real-Time Consumer Scan Stream */}
-                {overviewSubTab === 'live-stream' && (
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3 bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-emerald-800 text-white flex items-center justify-center">
-                          <Activity className="w-4 h-4 animate-spin" />
-                        </div>
-                        <div>
-                          <div className="text-xs font-bold text-emerald-950">
-                            Live Consumer Scan Feed Simulator
-                          </div>
-                          <div className="text-[11px] text-emerald-800">
-                            Real-time shopper engagement recorded whenever a package QR code is scanned
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => handleSimulateNewScan()}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl transition-all shadow-xs active:scale-95"
-                      >
-                        <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                        <span>Trigger Instant Scan</span>
-                      </button>
-                    </div>
-
-                    <div className="divide-y divide-stone-200/80 border border-stone-200/80 rounded-2xl overflow-hidden bg-[#FAF9F5]">
-                      {liveScansList.map((scan, idx) => (
-                        <div
-                          key={scan.id}
-                          className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-stone-50 transition-colors"
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-full bg-white border border-stone-200 flex items-center justify-center shrink-0 text-emerald-800 font-bold text-xs mt-0.5">
-                              {idx + 1}
-                            </div>
-                            <div className="space-y-0.5">
-                              <div className="flex items-center gap-2">
-                                <strong className="text-xs font-bold text-stone-900">
-                                  {scan.productName}
-                                </strong>
-                                <span className="font-mono text-[10px] bg-stone-200/80 px-1.5 py-0.5 rounded text-stone-700">
-                                  {scan.batchNumber}
-                                </span>
-                              </div>
-                              <div className="text-[11px] text-stone-600 flex flex-wrap items-center gap-2">
-                                <span className="inline-flex items-center gap-1 text-emerald-800 font-medium">
-                                  <MapPin className="w-3 h-3 text-emerald-700" />
-                                  <span>{scan.city}</span>
-                                </span>
-                                <span>·</span>
-                                <span className="inline-flex items-center gap-1 text-stone-500 font-mono text-[10px]">
-                                  <Smartphone className="w-3 h-3 text-stone-400" />
-                                  <span>{scan.device}</span>
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
-                            <span className="text-[11px] font-mono text-emerald-800 font-semibold bg-emerald-100/70 px-2.5 py-1 rounded-md">
-                              {scan.time}
-                            </span>
-                            <button
-                              onClick={() => onOpenQRProfile(scan.productId)}
-                              className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline underline-offset-2"
-                            >
-                              View Page →
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
 
               {/* Active Brand Catalog Spotlight */}
@@ -1253,7 +1018,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       Active Brand Catalog & Batch Registry
                     </h2>
                     <p className="text-xs text-stone-500">
-                      Every product batch carries an individual cryptographic QR transparency URL with verified lab reports
+                      Every product batch has a public scannable QR trust page with honest ingredient origins and lab certificates
                     </p>
                   </div>
 

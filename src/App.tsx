@@ -29,7 +29,6 @@ import { AdminPanel } from './components/AdminPanel';
 import { DemoTourBar, DEMO_TOUR_STEPS } from './components/DemoTourBar';
 import { AuthModal } from './components/AuthModal';
 import { SupportedLanguage } from './utils/i18n';
-import { FloatingQuickDock } from './components/ThemeAndLangControls';
 
 export default function App() {
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
@@ -612,14 +611,6 @@ export default function App() {
             'info'
           );
         }}
-      />
-
-      {/* Persistent Floating Controls (Always Visible on Screen) */}
-      <FloatingQuickDock
-        isDark={isDark}
-        onToggleTheme={toggleTheme}
-        currentLang={currentLang}
-        onSelectLang={setCurrentLang}
       />
 
       <div className="fixed top-16 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
